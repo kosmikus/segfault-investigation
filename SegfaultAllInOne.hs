@@ -27,7 +27,7 @@ class MyShow a where
 instance MyShow Char where
   myShow _ = "X"
 
-gshowS :: (All2 MyShow xss) => NS NP xss -> String
+gshowS :: (All2 MyShow xss) => NS xss -> String
 gshowS (Z xs)  = gshowP xs
 gshowS (S xss) = gshowS xss
 
@@ -49,4 +49,4 @@ type All2 f = All (All f)
 main :: IO ()
 main = do
   let t = 'x' :* Nil
-  print (gshowS (Z ('x' :* Nil) :: NS NP '[ '[ Char ] ]))
+  print (gshowS (Z ('x' :* Nil) :: NS '[ '[ Char ] ]))
