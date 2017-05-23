@@ -16,14 +16,11 @@
 {-# LANGUAGE ViewPatterns #-}
 module Main where
 
-import Generics.SOP hiding (I(..), SOP(..), All(..), Top, All2, SListI)
+import NS
 
 import GHC.Exts (Any, Constraint)
-{-
-import Data.Proxy
 import qualified Data.Vector as V
 import Unsafe.Coerce
--}
 
 class MyShow a where
   myShow :: a -> String
@@ -44,7 +41,6 @@ gshowP (I x :* xs) = myShow x ++ (gshowP xs)
 
 newtype I (a :: *) = I a
 
-{-
 newtype NP (f :: k -> *) (xs :: [k]) = NP (V.Vector (f Any))
 
 data IsNP (f :: k -> *) (xs :: [k]) where
@@ -68,6 +64,7 @@ pattern x :* xs <- (isNP -> IsCons x xs)
     x :* NP xs = NP (V.cons (unsafeCoerce x) xs)
 infixr 5 :*
 
+{-
 data NS (f :: k -> *) (xs :: [k]) = NS !Int (f Any)
 
 data IsNS (f :: k -> *) (xs :: [k]) where
@@ -101,10 +98,6 @@ type instance AllF _c '[]       = ()
 type instance AllF  c (x ': xs) = (c x, All c xs)
 
 type All2 f = All (All f)
-
-class Top x
-instance Top x
-
 
 main :: IO ()
 main = do
