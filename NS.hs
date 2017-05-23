@@ -50,8 +50,6 @@ isNS (NS i x)
 
 pattern Z :: () => (xs' ~ (x ': xs)) => NP x -> NS xs'
 pattern Z x <- (isNS -> IsZ x)
-  where
-    Z x = NS 0 (unsafeCoerce x)
 
 pattern S :: () => (xs' ~ (x ': xs)) => NS xs -> NS xs'
 pattern S p <- (isNS -> IsS p)

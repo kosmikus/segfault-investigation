@@ -21,7 +21,6 @@ import NS
 import GHC.Exts (Any, Constraint)
 import Unsafe.Coerce
 
-
 class MyShow a where
   myShow :: a -> String
 
