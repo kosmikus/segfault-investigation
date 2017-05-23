@@ -21,28 +21,23 @@ import Unsafe.Coerce
 
 newtype NP (xs :: [*]) = NP [Any]
 
+mkNP :: x -> NP '[ x ]
+mkNP x = NP [unsafeCoerce x]
+
 data IsNP (xs :: [*]) where
   IsNil  :: IsNP '[]
   IsCons :: x -> NP xs -> IsNP (x ': xs)
 
 isNP :: NP xs -> IsNP xs
 isNP (NP xs) =
-  if null xs
-    then unsafeCoerce IsNil
-    else unsafeCoerce (IsCons (head xs) (NP (tail xs)))
-
-pattern Nil :: () => (xs ~ '[]) => NP xs
-pattern Nil <- (isNP -> IsNil)
-  where
-    Nil = NP []
-
-pattern (:*) :: () => (xs' ~ (x ': xs)) => x -> NP xs -> NP xs'
-pattern x :* xs <- (isNP -> IsCons x xs)
-  where
-    x :* NP xs = NP (unsafeCoerce x : xs)
-infixr 5 :*
+  case xs of
+    []       -> unsafeCoerce IsNil
+    (x : xs) -> unsafeCoerce (IsCons x (NP xs))
 
 data NS (xss :: [[*]]) = NS !Int Any
+
+mkNS :: NP x -> NS '[ x ]
+mkNS x = NS 0 (unsafeCoerce x)
 
 data IsNS (xs :: [[*]]) where
   IsZ :: NP xs -> IsNS (xs ': xss)
@@ -50,12 +45,8 @@ data IsNS (xs :: [[*]]) where
 
 isNS :: NS xs -> IsNS xs
 isNS (NS i x)
-  | i == 0    = unsafeCoerce (mkZ x)
+  | i == 0    = unsafeCoerce (IsZ (unsafeCoerce x))
   | otherwise = unsafeCoerce (IsS (NS (i - 1) x))
-
-mkZ :: Any -> IsNS (xs ': xss)
-mkZ x = IsZ (unsafeCoerce x)
-{-# NOINLINE mkZ #-}
 
 pattern Z :: () => (xs' ~ (x ': xs)) => NP x -> NS xs'
 pattern Z x <- (isNS -> IsZ x)

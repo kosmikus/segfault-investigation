@@ -29,11 +29,14 @@ instance MyShow Char where
   myShow _ = "X"
 
 gshowS :: (All2 MyShow xss) => NS xss -> String
-gshowS (Z xs)  = gshowP xs
+gshowS (Z xs) = gshowP xs
 gshowS (S xss) = gshowS xss
 
 gshowP :: (All MyShow xs) => NP xs -> String
-gshowP (x :* Nil) = myShow x
+gshowP np =
+  case isNP np of
+    IsCons x np' -> case isNP np' of
+      IsNil -> myShow x
 
 class (AllF c xs) => All (c :: k -> Constraint) (xs :: [k])
 instance All c '[]
@@ -47,5 +50,4 @@ type All2 f = All (All f)
 
 main :: IO ()
 main = do
-  let t = 'x' :* Nil
-  print (gshowS (Z ('x' :* Nil) :: NS '[ '[ Char ] ]))
+  print (gshowS (mkNS (mkNP 'x') :: NS '[ '[ Char ] ]))
