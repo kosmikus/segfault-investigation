@@ -16,12 +16,12 @@
 {-# LANGUAGE ViewPatterns #-}
 module Main where
 
-import Generics.SOP hiding (I(..), SOP(..))
+import Generics.SOP hiding (I(..), SOP(..), All(..), Top, All2, SListI)
 
+import GHC.Exts (Any, Constraint)
 {-
 import Data.Proxy
 import qualified Data.Vector as V
-import GHC.Exts (Any, Constraint)
 import Unsafe.Coerce
 -}
 
@@ -31,17 +31,18 @@ class MyShow a where
 instance MyShow Char where
   myShow _ = "X"
 
-gshowS :: (All2 MyShow xss) => SOP I xss -> String
-gshowS (SOP (Z xs))  = gshowP xs
-gshowS (SOP (S xss)) = gshowS (SOP xss)
+gshowS :: (All2 MyShow xss) => NS (NP I) xss -> String
+gshowS (Z xs)  = gshowP xs
+gshowS (S xss) = gshowS xss
 
 gshowP :: (All MyShow xs) => NP I xs -> String
+gshowP (I x :* Nil) = myShow x
+{-
 gshowP Nil         = ""
 gshowP (I x :* xs) = myShow x ++ (gshowP xs)
+-}
 
 newtype I (a :: *) = I a
-
-newtype SOP (f :: (k -> *)) (xss :: [[k]]) = SOP (NS (NP f) xss)
 
 {-
 newtype NP (f :: k -> *) (xs :: [k]) = NP (V.Vector (f Any))
@@ -87,6 +88,7 @@ pattern S :: () => (xs' ~ (x ': xs)) => NS f xs -> NS f xs'
 pattern S p <- (isNS -> IsS p)
   where
     S (NS i x) = NS (i + 1) x
+-}
 
 class (SListI xs, AllF c xs) => All (c :: k -> Constraint) (xs :: [k]) where
 
@@ -123,10 +125,10 @@ type SListI2 = All SListI
 
 class Top x
 instance Top x
--}
 
 
 main :: IO ()
 main = do
   let t = I 'x' :* Nil
-  print (gshowS (SOP (Z t) :: SOP I '[ '[ Char ] ]))
+  -- print (gshowX (S (Z (I 'x')) :: NS I '[ Char, Char ]))
+  print (gshowS (Z t :: NS (NP I) '[ '[ Char ] ]))
