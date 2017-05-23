@@ -42,16 +42,20 @@ pattern x :* xs <- (isNP -> IsCons x xs)
     x :* NP xs = NP (unsafeCoerce x : xs)
 infixr 5 :*
 
-data NS (xss :: [[*]]) = forall xs . NS !Int (NP xs)
+data NS (xss :: [[*]]) = NS !Int Any
 
 data IsNS (xs :: [[*]]) where
-  IsZ :: NP x -> IsNS (x ': xs)
-  IsS :: NS xs -> IsNS (x ': xs)
+  IsZ :: NP xs -> IsNS (xs ': xss)
+  IsS :: NS xss -> IsNS (xs ': xss)
 
 isNS :: NS xs -> IsNS xs
 isNS (NS i x)
-  | i == 0    = unsafeCoerce (IsZ (unsafeCoerce x))
+  | i == 0    = unsafeCoerce (mkZ x)
   | otherwise = unsafeCoerce (IsS (NS (i - 1) x))
+
+mkZ :: Any -> IsNS (xs ': xss)
+mkZ x = IsZ (unsafeCoerce x)
+{-# NOINLINE mkZ #-}
 
 pattern Z :: () => (xs' ~ (x ': xs)) => NP x -> NS xs'
 pattern Z x <- (isNS -> IsZ x)
