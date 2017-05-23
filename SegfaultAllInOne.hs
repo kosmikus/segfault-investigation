@@ -90,38 +90,17 @@ pattern S p <- (isNS -> IsS p)
     S (NS i x) = NS (i + 1) x
 -}
 
-class (SListI xs, AllF c xs) => All (c :: k -> Constraint) (xs :: [k]) where
+class (AllF c xs) => All (c :: k -> Constraint) (xs :: [k])
 
-  -- | General constrained eliminator for type-level lists.
-  --
-  -- Takes an argument for the case of the empty list, and an argument
-  -- for the case of the non-empty list. The non-empty case can make use
-  -- of the constraint for the head, and of an 'All' constraint on the
-  -- tail.
-  --
-  cpara_All ::
-       Proxy c
-    -> r '[]
-    -> (forall y ys . (c y, All c ys) => r ys -> r (y ': ys))
-    -> r xs
+instance All c '[]
 
-instance All c '[] where
-  cpara_All _ nil _cons = nil
-  {-# INLINE cpara_All #-}
-
-instance (c x, All c xs) => All c (x ': xs) where
-  cpara_All p nil cons = cons (cpara_All p nil cons)
-  {-# INLINE cpara_All #-}
+instance (c x, All c xs) => All c (x ': xs)
 
 type family AllF (c :: k -> Constraint) (xs :: [k]) :: Constraint
 type instance AllF _c '[]       = ()
 type instance AllF  c (x ': xs) = (c x, All c xs)
 
 type All2 f = All (All f)
-
-type SListI = All Top
-
-type SListI2 = All SListI
 
 class Top x
 instance Top x
