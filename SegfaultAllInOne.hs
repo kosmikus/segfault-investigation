@@ -35,9 +35,7 @@ gshowP :: (All MyShow xs) => NP xs -> String
 gshowP (x :* Nil) = myShow x
 
 class (AllF c xs) => All (c :: k -> Constraint) (xs :: [k])
-
 instance All c '[]
-
 instance (c x, All c xs) => All c (x ': xs)
 
 type family AllF (c :: k -> Constraint) (xs :: [k]) :: Constraint

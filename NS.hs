@@ -42,7 +42,7 @@ pattern x :* xs <- (isNP -> IsCons x xs)
     x :* NP xs = NP (unsafeCoerce x : xs)
 infixr 5 :*
 
-data NS (xs :: [[*]]) = NS !Int (NP Any)
+data NS (xs :: [[*]]) = NS !Int Any
 
 data IsNS (xs :: [[*]]) where
   IsZ :: NP x -> IsNS (x ': xs)
@@ -50,7 +50,7 @@ data IsNS (xs :: [[*]]) where
 
 isNS :: NS xs -> IsNS xs
 isNS (NS i x)
-  | i == 0    = unsafeCoerce (IsZ x)
+  | i == 0    = unsafeCoerce (IsZ (unsafeCoerce x))
   | otherwise = unsafeCoerce (IsS (NS (i - 1) x))
 
 pattern Z :: () => (xs' ~ (x ': xs)) => NP x -> NS xs'
