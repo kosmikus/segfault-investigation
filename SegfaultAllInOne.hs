@@ -28,37 +28,35 @@ class MyShow a where
 instance MyShow Char where
   myShow _ = "X"
 
-gshowS :: (All2 MyShow xss) => NS (NP I) xss -> String
+gshowS :: (All2 MyShow xss) => NS NP xss -> String
 gshowS (Z xs)  = gshowP xs
 gshowS (S xss) = gshowS xss
 
-gshowP :: (All MyShow xs) => NP I xs -> String
-gshowP (I x :* Nil) = myShow x
+gshowP :: (All MyShow xs) => NP xs -> String
+gshowP (x :* Nil) = myShow x
 {-
 gshowP Nil         = ""
 gshowP (I x :* xs) = myShow x ++ (gshowP xs)
 -}
 
-newtype I (a :: *) = I a
+newtype NP (xs :: [*]) = NP (V.Vector Any)
 
-newtype NP (f :: k -> *) (xs :: [k]) = NP (V.Vector (f Any))
+data IsNP (xs :: [*]) where
+  IsNil  :: IsNP '[]
+  IsCons :: x -> NP xs -> IsNP (x ': xs)
 
-data IsNP (f :: k -> *) (xs :: [k]) where
-  IsNil  :: IsNP f '[]
-  IsCons :: f x -> NP f xs -> IsNP f (x ': xs)
-
-isNP :: NP f xs -> IsNP f xs
+isNP :: NP xs -> IsNP xs
 isNP (NP xs) =
   if V.null xs
     then unsafeCoerce IsNil
     else unsafeCoerce (IsCons (V.unsafeHead xs) (NP (V.unsafeTail xs)))
 
-pattern Nil :: () => (xs ~ '[]) => NP f xs
+pattern Nil :: () => (xs ~ '[]) => NP xs
 pattern Nil <- (isNP -> IsNil)
   where
     Nil = NP V.empty
 
-pattern (:*) :: () => (xs' ~ (x ': xs)) => f x -> NP f xs -> NP f xs'
+pattern (:*) :: () => (xs' ~ (x ': xs)) => x -> NP xs -> NP xs'
 pattern x :* xs <- (isNP -> IsCons x xs)
   where
     x :* NP xs = NP (V.cons (unsafeCoerce x) xs)
@@ -101,6 +99,5 @@ type All2 f = All (All f)
 
 main :: IO ()
 main = do
-  let t = I 'x' :* Nil
-  -- print (gshowX (S (Z (I 'x')) :: NS I '[ Char, Char ]))
-  print (gshowS (Z t :: NS (NP I) '[ '[ Char ] ]))
+  let t = 'x' :* Nil
+  print (gshowS (Z ('x' :* Nil) :: NS NP '[ '[ Char ] ]))
